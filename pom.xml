@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>7</version>
+	</parent>
+
+	<groupId>org.osframework.spring</groupId>
+	<artifactId>spring-chronicle</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>Spring Chronicle module</name>
+	<description>Spring framework module for integration of Chronicle high-performance collections</description>
+	<url>http://osframework.github.org/spring-chronicle</url>
+	<inceptionYear>2015</inceptionYear>
+
+	<organization>
+		<name>OSFramework Project</name>
+		<url>http://osframework.org/</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>davejoyce</id>
+			<name>Dave Joyce</name>
+			<email>dave@osframework.org</email>
+			<timezone>-5</timezone>
+			<roles>
+				<role>Project Lead</role>
+			</roles>
+		</developer>
+	</developers>
+
+	<scm>
+		<url>git@github.com/osframework/spring-chronicle.git</url>
+		<connection>scm:git:git://github.com/osframework/spring-chronicle.git</connection>
+		<developerConnection>scm:git:https://github.com/osframework/spring-chronicle.git</developerConnection>
+	</scm>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/osframework/spring-chronicle/issues</url>
+	</issueManagement>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.javaVersion>1.8</project.build.javaVersion>
+		<maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+		<build.timestamp>${maven.build.timestamp}</build.timestamp>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+</project>
