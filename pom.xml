@@ -239,8 +239,12 @@
 						<phase>verify</phase>
 						<configuration>
 							<failOnError>false</failOnError>
-							<show>private</show>
+							<show>package</show>
 							<nohelp>true</nohelp>
+							<links>
+								<link>http://openhft.github.io/Chronicle-Map/apidocs</link>
+								<link>http://docs.spring.io/spring/docs/current/javadoc-api</link>
+							</links>
 						</configuration>
 					</execution>
 				</executions>
