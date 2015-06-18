@@ -35,8 +35,12 @@ class LockTimeOutParser {
      * Create a new parser of the specified lock timeout expression.
      *
      * @param timeOutExpr lock timeout expression
+     * @throws IllegalArgumentException if expression is null
      */
     LockTimeOutParser(String timeOutExpr) {
+        if (null == timeOutExpr) {
+            throw new IllegalArgumentException("Timeout expression argument cannot be null");
+        }
         this.timeOutExpr = timeOutExpr;
         Matcher m = REGEX.matcher(timeOutExpr);
         if (m.matches()) {
