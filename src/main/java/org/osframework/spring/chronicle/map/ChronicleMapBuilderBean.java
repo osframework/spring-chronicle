@@ -151,7 +151,6 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        super.afterPropertiesSet();
         if (null == config.keyClass) {
             throw new IllegalStateException("Map key class must be specified prior to ChronicleMap construction");
         }
@@ -164,6 +163,7 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
                 throw new IllegalStateException("Off-heap persistence file must be readable and writable");
             }
         }
+        super.afterPropertiesSet();
     }
 
     @Override
@@ -174,7 +174,7 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
                 config.keyClass.getSimpleName(),
                 config.valueClass.getSimpleName());
         if (0L >= config.maxEntries) {
-            slf4jLogger.info("Map maximum entries unspecified; defaulting to {}", DEFAULT_ENTRIES);
+            slf4jLogger.info("Map maximum entries unspecified; using default...");
             config.maxEntries = DEFAULT_ENTRIES;
         }
         builder.entries(config.maxEntries);
