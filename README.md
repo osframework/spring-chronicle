@@ -1,4 +1,4 @@
-## Spring Framework - Chronicle Collection Support [![Build Status](https://travis-ci.org/osframework/spring-chronicle.svg?branch=master)](https://travis-ci.org/osframework/spring-chronicle)
+## Spring Framework - Chronicle Collection Support [![Build Status](https://travis-ci.org/osframework/spring-chronicle.svg?branch=develop)](https://travis-ci.org/osframework/spring-chronicle)
 An extension module for the [Spring Framework][], supporting integration of Chronicle high-performance collections:
 
  * [Chronicle Map][]
