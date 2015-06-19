@@ -7,7 +7,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Spring Chronicle module</name>
+	<name>Spring Framework - Chronicle Collection Support</name>
 	<description>Spring Framework module for integration of Chronicle high-performance collections</description>
 	<url>http://osframework.github.org/spring-chronicle</url>
 	<inceptionYear>2015</inceptionYear>
@@ -216,6 +216,9 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>${maven-javadoc-plugin.version}</version>
 					<configuration>
+						<windowtitle>Spring Chronicle, ${project.version}</windowtitle>
+						<header>Spring Chronicle, ${project.version}</header>
+						<footer>Spring Chronicle, ${project.version}</footer>
 						<links>
 							<link>http://openhft.github.io/Chronicle-Map/apidocs</link>
 							<link>http://docs.spring.io/spring/docs/current/javadoc-api</link>
@@ -272,6 +275,21 @@
 					<source>${project.build.javaVersion}</source>
 					<target>${project.build.javaVersion}</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>generate-javadoc</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+						<configuration>
+							<show>package</show>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
