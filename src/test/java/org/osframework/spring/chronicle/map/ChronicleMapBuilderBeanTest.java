@@ -49,6 +49,7 @@ public class ChronicleMapBuilderBeanTest {
 
         String tmpDir = System.getProperty("java.io.tmpdir");
         File tempFile = File.createTempFile(tmpDir, "ChronicleMap");
+        builderBean.setMaxEntries(100);
         builderBean.setPersistedTo(new FileSystemResource(tempFile));
 
         builderBean.afterPropertiesSet();
