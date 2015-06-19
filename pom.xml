@@ -2,19 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>org.sonatype.oss</groupId>
-		<artifactId>oss-parent</artifactId>
-		<version>9</version>
-	</parent>
-
 	<groupId>org.osframework.spring</groupId>
 	<artifactId>spring-chronicle</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Spring Chronicle module</name>
-	<description>Spring framework module for integration of Chronicle high-performance collections</description>
+	<description>Spring Framework module for integration of Chronicle high-performance collections</description>
 	<url>http://osframework.github.org/spring-chronicle</url>
 	<inceptionYear>2015</inceptionYear>
 
@@ -44,7 +38,7 @@
 	</developers>
 
 	<scm>
-		<url>git@github.com/osframework/spring-chronicle.git</url>
+		<url>https://github.com/osframework/spring-chronicle</url>
 		<connection>scm:git:git://github.com/osframework/spring-chronicle.git</connection>
 		<developerConnection>scm:git:https://github.com/osframework/spring-chronicle.git</developerConnection>
 	</scm>
@@ -52,6 +46,17 @@
 		<system>GitHub</system>
 		<url>https://github.com/osframework/spring-chronicle/issues</url>
 	</issueManagement>
+	<ciManagement>
+		<system>Travis</system>
+		<url>https://travis-ci.org/osframework/spring-chronicle</url>
+	</ciManagement>
+
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -71,8 +76,12 @@
 		<!-- Plugin versions -->
 		<maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
 		<maven-enforcer-plugin.version>1.4</maven-enforcer-plugin.version>
+		<maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
 		<maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
+		<maven-scm-publish-plugin.version>1.1</maven-scm-publish-plugin.version>
+		<maven-source-plugin.version>2.4</maven-source-plugin.version>
 		<maven-surefire-plugin.version>2.18.1</maven-surefire-plugin.version>
+		<nexus-staging-maven-plugin.version>1.6.5</nexus-staging-maven-plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -194,13 +203,39 @@
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>${maven-javadoc-plugin.version}</version>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${maven-surefire-plugin.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>${maven-surefire-plugin.version}</version>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven-source-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven-javadoc-plugin.version}</version>
+					<configuration>
+						<links>
+							<link>http://openhft.github.io/Chronicle-Map/apidocs</link>
+							<link>http://docs.spring.io/spring/docs/current/javadoc-api</link>
+						</links>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-scm-publish-plugin</artifactId>
+					<version>${maven-scm-publish-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${maven-gpg-plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.sonatype.plugins</groupId>
+					<artifactId>nexus-staging-maven-plugin</artifactId>
+					<version>${nexus-staging-maven-plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -239,27 +274,62 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-javadoc</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<phase>verify</phase>
-						<configuration>
-							<failOnError>false</failOnError>
-							<show>package</show>
-							<nohelp>true</nohelp>
-							<links>
-								<link>http://openhft.github.io/Chronicle-Map/apidocs</link>
-								<link>http://docs.spring.io/spring/docs/current/javadoc-api</link>
-							</links>
-						</configuration>
-					</execution>
-				</executions>
+				<groupId>org.sonatype.plugins</groupId>
+				<artifactId>nexus-staging-maven-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-source</id>
+								<goals>
+									<goal>jar-no-fork</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadoc</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
