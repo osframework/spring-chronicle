@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.6.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/DECORATION/1.6.0 http://maven.apache.org/xsd/decoration-1.6.0.xsd">
+  <body>
+	<menu name="Overview">
+	  <item name="Introduction" href="index.html"/>
+	  <item name="FAQ" href="faq.html"/>
+	  <item name="License" href="http://www.apache.org/licenses/"/>
+	  <item name="Download" href="download.html"/>
+	</menu>
+<!--
+	<menu name="Examples">
+	  <item name="Declaring ChronicleMap bean" href="/examples/declaring-ChronicleMap-bean.html"/>
+      <item name="Declaring ChronicleSet bean" href="/examples/declaring-ChronicleSet-bean.html"/>
+      <item name="Declaring ChronicleQueue bean" href="/examples/declaring-ChronicleQueue-bean.html"/>
+	</menu>
+-->
+	  <menu ref="reports" />
+  </body>
+</project>
