@@ -5,4 +5,4 @@ secure: "xQhkZpBI91jFzIz4aB9hcwItyoEmjg3onBCQ2rnnGitBjQm8BNLphgR/oYG+3Pq9g04yCbW
 install:
   - mvn install -DskipTests=true
   - mvn site
-after_success: - .travis-ci/push-site-to-gh-pages.sh
+after_success: .travis-ci/push-site-to-gh-pages.sh
