@@ -3,6 +3,7 @@ package org.osframework.spring.chronicle.map;
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
 import net.openhft.lang.io.serialization.BytesMarshaller;
+import net.openhft.lang.model.Byteable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
@@ -26,8 +27,7 @@ import static org.springframework.util.Assert.notNull;
  * @param <V> Value class type parameter of ChronicleMap to be built
  *
  * @author <a href="mailto:dave@osframework.org">Dave Joyce</a>
- * @version 0.0.1
- * @since 2015-06-17
+ * @since 0.0.1
  * @see net.openhft.chronicle.map.ChronicleMap
  * @see net.openhft.chronicle.map.ChronicleMapBuilder
  */
@@ -69,6 +69,36 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
     }
 
     /**
+     * Set the average number of bytes, taken by serialized form of keys, put into the
+     * ChronicleMap instance this object builds. If key size is always the same, call
+     * {@link #setConstantKeySizeBySample(Object)} method instead of this one.
+     * <p>If key is a boxed primitive type or {@code Byteable} subclass, i. e. if key size is known
+     * statically, it is automatically accounted and shouldn't be specified by user.</p>
+     *
+     * @param averageKeySize average number of bytes, taken by serialized form of keys
+     */
+    public void setAverageKeySize(double averageKeySize) {
+        config.averageKeySize = averageKeySize;
+        config.checkKeySizing();
+    }
+
+    /**
+     * Set the constant number of bytes, taken by serialized form of keys, put into the
+     * ChronicleMap instance this object builds. If key size varies, call
+     * {@link #setAverageKeySize(double)} method instead of this one. By providing the
+     * {@code sampleKey}, all keys should take the same number of bytes in serialized form,
+     * as this sample object.
+     * <p>If key is a boxed primitive type or {@code Byteable} subclass, i. e. if key size is known
+     * statically, it is automatically accounted and shouldn't be specified by user.</p>
+     *
+     * @param sampleKey sample key with constant number of bytes for all keys
+     */
+    public void setConstantKeySizeBySample(K sampleKey) {
+        config.sampleKey = sampleKey;
+        config.checkKeySizing();
+    }
+
+    /**
      * Set value type of the ChronicleMap instance this object builds.
      *
      * @param valueClass class of the map value type
@@ -88,6 +118,36 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
      */
     public void setValueMarshaller(BytesMarshaller<? super V> valueMarshaller) {
         config.valueMarshaller = valueMarshaller;
+    }
+
+    /**
+     * Set the average number of bytes, taken by serialized form of values, put into the
+     * ChronicleMap instance this object builds. If value size is always the same, call
+     * {@link #setConstantValueSizeBySample(Object)} method instead of this one.
+     * <p>If value is a boxed primitive type or {@code Byteable} subclass, i. e. if value size is known
+     * statically, it is automatically accounted and shouldn't be specified by user.</p>
+     *
+     * @param averageValueSize average number of bytes, taken by serialized form of values
+     */
+    public void setAverageValueSize(double averageValueSize) {
+        config.averageValueSize = averageValueSize;
+        config.checkValueSizing();
+    }
+
+    /**
+     * Set the constant number of bytes, taken by serialized form of values, put into the
+     * ChronicleMap instance this object builds. If value size varies, call
+     * {@link #setAverageValueSize(double)} method instead of this one. By providing the
+     * {@code sampleValue}, all values should take the same number of bytes in serialized form,
+     * as this sample object.
+     * <p>If value is a boxed primitive type or {@code Byteable} subclass, i. e. if value size is known
+     * statically, it is automatically accounted and shouldn't be specified by user.</p>
+     *
+     * @param sampleValue sample value with constant number of bytes for all values
+     */
+    public void setConstantValueSizeBySample(V sampleValue) {
+        config.sampleValue = sampleValue;
+        config.checkValueSizing();
     }
 
     /**
@@ -219,13 +279,37 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
     final class ChronicleMapBuilderConfig {
 
         private Class<K> keyClass;
+        private double averageKeySize;
+        private K sampleKey;
+
         private Class<V> valueClass;
+        private double averageValueSize;
+        private V sampleValue;
+
         private long maxEntries = -1L;
         private BytesMarshaller<? super K> keyMarshaller;
         private BytesMarshaller<? super V> valueMarshaller;
         private Boolean putReturnsNull, removeReturnsNull, immutableKeys;
         private LockTimeOutParser lockTimeOutParser = null;
         private Resource persistedTo;
+
+        private void checkKeySizing() {
+            if (-1.0 == Math.signum(averageKeySize)) {
+                throw new IllegalArgumentException("Average key size must be positive number");
+            }
+            if (1.0 == Math.signum(averageKeySize) && null != sampleKey) {
+                throw new IllegalStateException("Ambiguous key sizing: average and constant sizes specified");
+            }
+        }
+
+        private void checkValueSizing() {
+            if (-1.0 == Math.signum(averageValueSize)) {
+                throw new IllegalArgumentException("Average value size must be positive number");
+            }
+            if (1.0 == Math.signum(averageValueSize) && null != sampleValue) {
+                throw new IllegalStateException("Ambiguous value sizing: average and constant sizes specified");
+            }
+        }
     }
 
 }
