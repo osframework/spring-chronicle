@@ -5,7 +5,10 @@ import net.openhft.chronicle.map.Alignment;
 import java.beans.PropertyEditorSupport;
 
 /**
- * Created by dave on 6/29/15.
+ * Supports setting and displaying JavaBean properties of type {@code Alignment}.
+ *
+ * @author <a href="mailto:dave@osframework.org">Dave Joyce</a>
+ * @since 0.0.1
  */
 public class AlignmentEditor extends PropertyEditorSupport {
 

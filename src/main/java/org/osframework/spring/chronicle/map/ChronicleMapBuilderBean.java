@@ -5,12 +5,15 @@ import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
 import net.openhft.lang.io.serialization.BytesMarshaller;
 import net.openhft.lang.model.Byteable;
+import org.osframework.spring.chronicle.InetSocketAddressEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.core.io.Resource;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import static org.springframework.util.Assert.notNull;
 
@@ -289,6 +292,33 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         config.persistedTo = persistedTo;
     }
 
+    /**
+     * Set network addresses to which ChronicleMap instances created by this object will push entries.
+     *
+     * @param pushToAddresses network addresses to push to
+     */
+    public void setPushTo(InetSocketAddress... pushToAddresses) {
+        if (0 < pushToAddresses.length) {
+            config.pushToAddresses = pushToAddresses;
+        }
+    }
+
+    /**
+     * Set network addresses to which ChronicleMap instances created by this object will push entries.
+     *
+     * @param pushToAddresses network addresses to push to
+     * @see InetSocketAddressEditor
+     */
+    public void setPushTo(String... pushToAddresses) {
+        InetSocketAddress[] converted = new InetSocketAddress[pushToAddresses.length];
+        for (int i = 0; i < pushToAddresses.length; i++) {
+            InetSocketAddressEditor editor = new InetSocketAddressEditor();
+            editor.setAsText(pushToAddresses[i]);
+            converted[i] = (InetSocketAddress)editor.getValue();
+        }
+        setPushTo(converted);
+    }
+
     public void setPutReturnsNull(boolean putReturnsNull) {
         config.putReturnsNull = putReturnsNull;
     }
@@ -410,6 +440,7 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         private int metaDataBytes = -1;
         private LockTimeOutParser lockTimeOutParser = null;
         private Resource persistedTo;
+        private InetSocketAddress[] pushToAddresses;
 
         private void checkKeySizing() {
             if (null != averageKeySize && -1.0 == Math.signum(averageKeySize)) {
