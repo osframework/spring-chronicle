@@ -13,10 +13,18 @@ if [ "$TRAVIS_REPO_SLUG" == "osframework/spring-chronicle" ] && [ "$TRAVIS_PULL_
 	echo -e "Cloned branch 'gh-pages' to ${HOME}/gh-pages\n"
 
 	cd gh-pages
-	git rm -rf ./apidocs
-	git rm -rf ./css
-	git rm -rf ./images
-	git rm -rf ./testapidocs
+	if [ -d ./apidocs ]; then
+		git rm -rf ./apidocs
+	fi
+	if [ -d ./css ]; then
+		git rm -rf ./css
+	fi
+	if [ -d ./images ]; then
+		git rm -rf ./images
+	fi
+	if [ -d ./testapidocs ]; then
+		git rm -rf ./testapidocs
+	fi
 	git rm -rf ./*.html
 	cp -Rf $HOME/site-latest/apidocs ./apidocs
 	cp -Rf $HOME/site-latest/css ./css
