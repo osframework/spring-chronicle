@@ -15,7 +15,7 @@ if [ "$TRAVIS_REPO_SLUG" == "osframework/spring-chronicle" ] && [ "$TRAVIS_PULL_
 	git rm -rf ./css
 	git rm -rf ./images
 	git rm -rf ./testapidocs
-	git rm -rm ./*.html
+	git rm -rf ./*.html
 	cp -Rf $TRAVIS_BUILD_DIR/site-latest ./
 	git add -f .
 	git commit -m "Latest site generated on successful build $TRAVIS_BUILD_NUMBER"
