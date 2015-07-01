@@ -26,12 +26,13 @@ import static org.springframework.util.Assert.notNull;
  * adapts the <em>fluent API</em> builder methods of {@code ChronicleMapBuilder} to the
  * standard JavaBean API mutator style, for declarative configuration of the details of the
  * created map in a Spring BeanFactory.
- * <p>On initialization of the BeanFactory, an instance of this class produces a singleton {@code ChronicleMapBuilder}
- * object, which is thread safe. The underlying singleton builder can be safely used to create both singleton and
- * prototype scope {@code ChronicleMap} objects.</p>
+ * <p>On initialization of the BeanFactory, an instance of this class produces a singleton
+ * {@code ChronicleMapBuilder} object, which is thread safe. The underlying singleton
+ * builder can be safely used to create both singleton and prototype scope
+ * {@code ChronicleMap} objects.</p>
  *
- * @param <K> Key class type parameter of ChronicleMap to be built
- * @param <V> Value class type parameter of ChronicleMap to be built
+ * @param <K> Key class of ChronicleMap to be built
+ * @param <V> Value class of ChronicleMap to be built
  *
  * @author <a href="mailto:dave@osframework.org">Dave Joyce</a>
  * @since 0.0.1
