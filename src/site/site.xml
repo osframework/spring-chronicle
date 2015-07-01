@@ -6,7 +6,7 @@
 	<menu name="Overview">
 	  <item name="Introduction" href="index.html"/>
 	  <item name="FAQ" href="faq.html"/>
-	  <item name="License" href="http://www.apache.org/licenses/"/>
+	  <item name="License" href="http://www.apache.org/licenses/LICENSE-2.0"/>
 	  <item name="Download" href="download.html"/>
 	</menu>
 <!--
