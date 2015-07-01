@@ -1,19 +1,22 @@
 package org.osframework.spring.chronicle.map;
 
-import net.openhft.chronicle.map.Alignment;
-import net.openhft.chronicle.map.ChronicleMap;
-import net.openhft.chronicle.map.ChronicleMapBuilder;
+import net.openhft.chronicle.hash.ChronicleHashBuilder;
+import net.openhft.chronicle.hash.ChronicleHashErrorListener;
+import net.openhft.chronicle.map.*;
 import net.openhft.lang.io.serialization.BytesMarshaller;
+import net.openhft.lang.io.serialization.ObjectSerializer;
 import net.openhft.lang.model.Byteable;
 import org.osframework.spring.chronicle.InetSocketAddressEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 
 import static org.springframework.util.Assert.notNull;
 
@@ -80,6 +83,8 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
      * statically, it is automatically accounted and shouldn't be specified by user.</p>
      *
      * @param averageKeySize average number of bytes, taken by serialized form of keys
+     * @throws IllegalArgumentException if argument is not positive number
+     * @throws IllegalStateException if {@link #setConstantKeySizeBySample(Object) sample key} has been specified
      */
     public void setAverageKeySize(double averageKeySize) {
         config.averageKeySize = averageKeySize;
@@ -96,6 +101,7 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
      * statically, it is automatically accounted and shouldn't be specified by user.</p>
      *
      * @param sampleKey sample key with constant number of bytes for all keys
+     * @throws IllegalStateException if {@link #setAverageKeySize(double) avg key size} has been specified
      */
     public void setConstantKeySizeBySample(K sampleKey) {
         config.sampleKey = sampleKey;
@@ -228,6 +234,21 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
     }
 
     /**
+     * Set the actual number of chunks that will be reserved for any single segment of the
+     * ChronicleMap instances created by this object. This configuration is a lower-level version of
+     * {@link #setEntriesPerSegment(long)}.
+     * <p>Setting this property makes sense only if {@link #setActualChunkSize(int)},
+     * {@link #setActualSegments(int)}, and {@link #setEntriesPerSegment(long)} are also configured
+     * manually.</p>
+     *
+     * @param actualChunksPerSegment the actual number of chunks reserved per segment in the
+     *                               ChronicleMap instances created by this object
+     */
+    public void setActualChunksPerSegment(long actualChunksPerSegment) {
+        config.actualChunksPerSegment = actualChunksPerSegment;
+    }
+
+    /**
      * Set the actual number of segments in ChronicleMap instances created by this object.
      * With {@link #setEntriesPerSegment(long) actual number of segments}, this configuration
      * replaces a single {@link #setMaxEntries(long)} call.
@@ -289,6 +310,20 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
      * @param persistedTo off-heap entry storage filesystem location
      */
     public void setPersistedTo(Resource persistedTo) {
+        if (persistedTo instanceof FileSystemResource) {
+            setPersistedTo(((FileSystemResource)persistedTo).getFile());
+        } else {
+            throw new IllegalArgumentException("Resource argument must resolve to a filesystem path");
+        }
+    }
+
+    /**
+     * Set filesystem location to which the {@code ChronicleMap} instance will persist its entries off-heap. The
+     * specified value must be a {@code File} that is readable and writable.
+     *
+     * @param persistedTo off-heap entry storage filesystem location
+     */
+    public void setPersistedTo(File persistedTo) {
         config.persistedTo = persistedTo;
     }
 
@@ -319,14 +354,79 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         setPushTo(converted);
     }
 
+    /**
+     * Set listener to be fired on error events in ChronicleMap instances created by this object.
+     *
+     * @param errorListener error event listener
+     */
+    public void setErrorListener(ChronicleHashErrorListener errorListener) {
+        config.errorListener = errorListener;
+    }
+
+    /**
+     * Set listener to be fired when key events occur in ChronicleMap instances created by
+     * this object.
+     *
+     * @param eventListener key event listener
+     */
+    public void setEventListener(MapEventListener<K, V> eventListener) {
+        config.eventListener = eventListener;
+    }
+
+    /**
+     * Set serialized bytes listener to be fired when key events occur in ChronicleMap
+     * instances created by this object.
+     *
+     * @param bytesEventListener key event listener
+     * @see BytesMapEventListener
+     */
+    public void setBytesMapEventListener(BytesMapEventListener bytesEventListener) {
+        config.bytesEventListener = bytesEventListener;
+    }
+
+    /**
+     * Set serializer used to serialize both keys and values in ChronicleMap instances created
+     * by this object, if they require:
+     * <ul>
+     *     <li>loose typing</li>
+     *     <li>nullability</li>
+     * </ul>
+     * <p>Set this only if custom {@link #setKeyMarshaller(BytesMarshaller) key} and
+     * {@link #setValueMarshaller(BytesMarshaller) value} marshallers are not configured.</p>
+     *
+     * @param objectSerializer generic serializer of entry keys and values
+     */
+    public void setObjectSerializer(ObjectSerializer objectSerializer) {
+        config.objectSerializer = objectSerializer;
+    }
+
+    /**
+     * Toggle behavior of ChronicleMap instances created by this object, when the
+     * {@link java.util.Map#put(Object, Object)} method is called.
+     *
+     * @param putReturnsNull flag indicating whether {@code put} method returns null
+     */
     public void setPutReturnsNull(boolean putReturnsNull) {
         config.putReturnsNull = putReturnsNull;
     }
 
+    /**
+     * Toggle behavior of ChronicleMap instances created by this object, when the
+     * {@link java.util.Map#remove(Object)} method is called.
+     *
+     * @param removeReturnsNull flag indicating whether {@code remove} method returns null
+     */
     public void setRemoveReturnsNull(boolean removeReturnsNull) {
         config.removeReturnsNull = removeReturnsNull;
     }
 
+    /**
+     * Toggle whether key objects of entries in ChronicleMap instances created by this
+     * object are inherently immutable.
+     *
+     * @param immutableKeys flag indicating whether entry keys are immutable
+     * @see ChronicleHashBuilder#immutableKeys()
+     */
     public void setImmutableKeys(boolean immutableKeys) {
         config.immutableKeys = immutableKeys;
     }
@@ -341,11 +441,26 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         config.metaDataBytes = metaDataBytes;
     }
 
+    /**
+     * Get the type of object that this {@code FactoryBean} creates.
+     *
+     * @return {@code ChronicleMap} class
+     */
     @Override
     public Class<?> getObjectType() {
         return ChronicleMap.class;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>This method implementation validates:</p>
+     * <ul>
+     *     <li>Required {@code keyClass} and {@code valueClass} are set</li>
+     *     <li>The {@code persistedTo} property is readable and writable (if set)</li>
+     * </ul>
+     *
+     * @throws Exception if any validation fails prior to map creation
+     */
     @Override
     public void afterPropertiesSet() throws Exception {
         if (null == config.keyClass) {
@@ -355,16 +470,28 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
             throw new IllegalStateException("Map value class must be specified prior to ChronicleMap construction");
         }
         if (null != config.persistedTo) {
-            File f = config.persistedTo.getFile();
-            if (!f.canRead() || !f.canWrite()) {
+            if (config.persistedTo.isDirectory()) {
+                throw new IllegalArgumentException("Property 'persistedTo' cannot be a directory");
+            }
+            if (!config.persistedTo.canRead() || !config.persistedTo.canWrite()) {
                 throw new IllegalStateException("Off-heap persistence file must be readable and writable");
             }
         }
         super.afterPropertiesSet();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>This method implementation constructs and configures a
+     * {@linkplain ChronicleMapBuilder} singleton, from which the {@code ChronicleMap} object
+     * is produced.</p>
+     *
+     * @return constructed, configured {@code ChronicleMap} object
+     * @throws Exception if map construction fails for any reason
+     */
     @Override
     protected ChronicleMap<K, V> createInstance() throws Exception {
+        // 1. Initial builder setup
         builder = ChronicleMapBuilder.of(config.keyClass, config.valueClass);
         slf4jLogger.info("Constructing {} of ChronicleMap<{}, {}>",
                 (isSingleton() ? "singleton instance" : "instances"),
@@ -376,41 +503,119 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         }
         builder.entries(config.maxEntries);
         slf4jLogger.info("Map will hold maximum of {} entries", config.maxEntries);
+
+        // 2. Key settings
+        if (null != config.averageKeySize) {
+            builder.averageKeySize(config.averageKeySize);
+            slf4jLogger.debug("Map entry avg key size: {} bytes", config.averageKeySize);
+        }
+        if (null != config.sampleKey) {
+            builder.constantKeySizeBySample(config.sampleKey);
+            slf4jLogger.debug("Map entry const key size set");
+        }
+
+        // 3. Value settings
+        if (null != config.averageValueSize) {
+            builder.averageValueSize(config.averageValueSize);
+            slf4jLogger.debug("Map entry avg value size: {} bytes", config.averageValueSize);
+        }
+        if (null != config.sampleValue) {
+            builder.constantValueSizeBySample(config.sampleValue);
+            slf4jLogger.debug("Map entry const value size set");
+        }
+
+        // 4. Serializer settings
         if (null != config.keyMarshaller) {
             builder.keyMarshaller(config.keyMarshaller);
-            slf4jLogger.info("Map entry keys serialized by {}", config.keyMarshaller.getClass().getSimpleName());
+            slf4jLogger.debug("Map entry keys serialized by {}", config.keyMarshaller.getClass().getSimpleName());
         }
         if (null != config.valueMarshaller) {
             builder.valueMarshaller(config.valueMarshaller);
-            slf4jLogger.info("Map entry values serialized by {}", config.valueMarshaller.getClass().getSimpleName());
+            slf4jLogger.debug("Map entry values serialized by {}", config.valueMarshaller.getClass().getSimpleName());
         }
+        if (null != config.objectSerializer) {
+            builder.objectSerializer(config.objectSerializer);
+            slf4jLogger.debug("Map entries serialized by {}", config.objectSerializer.getClass().getSimpleName());
+        }
+
+        // 5. Entry operation behavior settings
         if (Boolean.TRUE.equals(config.immutableKeys)) {
             builder.immutableKeys();
-            slf4jLogger.info("Map will employ immutable keys");
+            slf4jLogger.debug("Map will employ immutable keys");
         }
         if (Boolean.TRUE.equals(config.putReturnsNull)) {
             builder.putReturnsNull(config.putReturnsNull);
-            slf4jLogger.info("Invocation of put method will return null");
+            slf4jLogger.debug("Invocation of put method will return null");
         }
         if (Boolean.TRUE.equals(config.removeReturnsNull)) {
             builder.removeReturnsNull(config.removeReturnsNull);
-            slf4jLogger.info("Invocation of remove method will return null");
+            slf4jLogger.debug("Invocation of remove method will return null");
         }
         if (-1 != config.metaDataBytes) {
             builder.metaDataBytes(config.metaDataBytes);
-            slf4jLogger.info("Map entries will allocate {} bytes for metadata", config.metaDataBytes);
+            slf4jLogger.debug("Map entries will allocate {} bytes for metadata", config.metaDataBytes);
         }
         if (null != config.lockTimeOutParser && config.lockTimeOutParser.valid()) {
-            slf4jLogger.info("Map query operation lock timeout set to {} {}",
-                             config.lockTimeOutParser.getAmount(),
-                             config.lockTimeOutParser.getUnit());
             builder.lockTimeOut(config.lockTimeOutParser.getAmount(), config.lockTimeOutParser.getUnit());
+            slf4jLogger.debug("Map query operation lock timeout set to {} {}",
+                              config.lockTimeOutParser.getAmount(),
+                              config.lockTimeOutParser.getUnit());
+        }
+
+        // 6. Low-level storage settings
+        if (null != config.alignment) {
+            builder.entryAndValueAlignment(config.alignment);
+            slf4jLogger.debug("Map entry / value alignment set to {}", config.alignment);
+        }
+        if (-1 != config.actualChunkSize) {
+            builder.actualChunkSize(config.actualChunkSize);
+            slf4jLogger.debug("Map will allocate chunks of {} bytes", config.actualChunkSize);
+        }
+        if (-1 != config.maxChunksPerEntry) {
+            builder.maxChunksPerEntry(config.maxChunksPerEntry);
+            slf4jLogger.debug("Map will use max of {} chunks per entry", config.maxChunksPerEntry);
+        }
+        if (-1 != config.minSegments) {
+            builder.minSegments(config.minSegments);
+            slf4jLogger.debug("Map will have min of {} segments", config.minSegments);
+        }
+        if (-1 != config.actualSegments) {
+            builder.actualSegments(config.actualSegments);
+            slf4jLogger.debug("Map will have {} actual segments", config.actualSegments);
+        }
+        if (-1L != config.entriesPerSegment) {
+            builder.entriesPerSegment(config.entriesPerSegment);
+            slf4jLogger.debug("Map will store {} entries per segment", config.entriesPerSegment);
+        }
+        if (-1L != config.actualChunksPerSegment) {
+            builder.actualChunksPerSegment(config.actualChunksPerSegment);
+            slf4jLogger.debug("Map will allocate {} chunks per segment", config.actualChunksPerSegment);
+        }
+
+        // 7. Event listener settings
+        if (null != config.errorListener) {
+            builder.errorListener(config.errorListener);
+            slf4jLogger.debug("Map error listener: {}", config.errorListener.getClass().getSimpleName());
+        }
+        if (null != config.eventListener) {
+            builder.eventListener(config.eventListener);
+            slf4jLogger.debug("Map event listener: {}", config.eventListener.getClass().getSimpleName());
+        }
+        if (null != config.bytesEventListener) {
+            builder.bytesEventListener(config.bytesEventListener);
+            slf4jLogger.debug("Map bytes event listener: {}", config.bytesEventListener.getClass().getSimpleName());
+        }
+
+        // 8. Network & replication settings
+        if (null != config.pushToAddresses && 0 < config.pushToAddresses.length) {
+            builder.pushTo(config.pushToAddresses);
+            slf4jLogger.debug("Map entries will push to [{}]", Arrays.toString(config.pushToAddresses));
         }
 
         if (null != config.persistedTo) {
             slf4jLogger.info("Map entries persisted off-heap at {}", config.persistedTo.toString());
         }
-        return (null != config.persistedTo) ? builder.createPersistedTo(config.persistedTo.getFile()) : builder.create();
+        return (null != config.persistedTo) ? builder.createPersistedTo(config.persistedTo) : builder.create();
     }
 
     /**
@@ -420,12 +625,14 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
     final class ChronicleMapBuilderConfig {
 
         private Class<K> keyClass;
+        private BytesMarshaller<? super K> keyMarshaller;
         private Double averageKeySize = null;
-        private K sampleKey;
+        private K sampleKey = null;
 
         private Class<V> valueClass;
+        private BytesMarshaller<? super V> valueMarshaller;
         private Double averageValueSize = null;
-        private V sampleValue;
+        private V sampleValue = null;
 
         private int actualChunkSize = -1;
         private int maxChunksPerEntry = -1;
@@ -433,14 +640,18 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         private long maxEntries = -1L;
         private long entriesPerSegment = -1L;
         private int actualSegments = -1;
+        private long actualChunksPerSegment = -1L;
         private int minSegments = -1;
-        private BytesMarshaller<? super K> keyMarshaller;
-        private BytesMarshaller<? super V> valueMarshaller;
+
+        private ObjectSerializer objectSerializer;
         private Boolean putReturnsNull, removeReturnsNull, immutableKeys;
         private int metaDataBytes = -1;
         private LockTimeOutParser lockTimeOutParser = null;
-        private Resource persistedTo;
-        private InetSocketAddress[] pushToAddresses;
+        private File persistedTo = null;
+        private InetSocketAddress[] pushToAddresses = null;
+        private ChronicleHashErrorListener errorListener = null;
+        private MapEventListener<K, V> eventListener = null;
+        private BytesMapEventListener bytesEventListener = null;
 
         private void checkKeySizing() {
             if (null != averageKeySize && -1.0 == Math.signum(averageKeySize)) {
@@ -452,10 +663,10 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         }
 
         private void checkValueSizing() {
-            if (-1.0 == Math.signum(averageValueSize)) {
+            if (null != averageValueSize && -1.0 == Math.signum(averageValueSize)) {
                 throw new IllegalArgumentException("Average value size must be positive number");
             }
-            if (1.0 == Math.signum(averageValueSize) && null != sampleValue) {
+            if (null != averageValueSize && null != sampleValue) {
                 throw new IllegalStateException("Ambiguous value sizing: average and constant sizes specified");
             }
         }
