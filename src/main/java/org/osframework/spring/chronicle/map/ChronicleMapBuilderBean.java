@@ -6,19 +6,9 @@ import net.openhft.chronicle.map.*;
 import net.openhft.lang.io.serialization.BytesMarshaller;
 import net.openhft.lang.io.serialization.ObjectSerializer;
 import net.openhft.lang.model.Byteable;
-import org.osframework.spring.chronicle.InetSocketAddressEditor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
+import org.osframework.spring.chronicle.AbstractChronicleBuilderBean;
 
-import java.io.File;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.Arrays;
-
-import static org.springframework.util.Assert.notNull;
 
 /**
  * Adapter implementation of {@code FactoryBean} interface to support creation of a
@@ -39,19 +29,17 @@ import static org.springframework.util.Assert.notNull;
  * @see net.openhft.chronicle.map.ChronicleMap
  * @see net.openhft.chronicle.map.ChronicleMapBuilder
  */
-public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<ChronicleMap<K, V>> {
+public class ChronicleMapBuilderBean<K, V> extends AbstractChronicleBuilderBean<ChronicleMap<K, V>> {
 
     protected static final long DEFAULT_ENTRIES = 1 << 20;
 
     private final ChronicleMapBuilderConfig config;
-    private final Logger slf4jLogger;
 
     private ChronicleMapBuilder<K, V> builder = null;
 
     public ChronicleMapBuilderBean() {
         super();
         config = new ChronicleMapBuilderConfig();
-        slf4jLogger = LoggerFactory.getLogger(this.getClass());
     }
 
     /**
@@ -282,80 +270,6 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
     }
 
     /**
-     * Set timeout of locking on segments of {@code ChronicleMap} objects, created by this factory bean, when performing
-     * any queries, as well as bulk operations like iteration.
-     * <h2>Timeout expression</h2>
-     * <p>Valid timeout expressions are composed of a long amount and a standard time unit abbreviation. Examples:</p>
-     * <pre>
-     * 100ns - 100 nanoseconds
-     * 300µs - 300 microseconds
-     * 500ms - 500 milliseconds
-     *   10s -  10 seconds
-     *    2m -   2 minutes
-     *    1h -   1 hour
-     * </pre>
-     *
-     * @param lockTimeOut lock timeout expression
-     * @see LockTimeOutParser
-     */
-    public void setLockTimeOut(String lockTimeOut) {
-        if (null != lockTimeOut) {
-            config.lockTimeOutParser = new LockTimeOutParser(lockTimeOut);
-        }
-    }
-
-    /**
-     * Set filesystem location to which the {@code ChronicleMap} instance will persist its entries off-heap. The
-     * specified value must resolve to a {@code File} that is readable and writable.
-     *
-     * @param persistedTo off-heap entry storage filesystem location
-     */
-    public void setPersistedTo(Resource persistedTo) {
-        if (persistedTo instanceof FileSystemResource) {
-            setPersistedTo(((FileSystemResource)persistedTo).getFile());
-        } else {
-            throw new IllegalArgumentException("Resource argument must resolve to a filesystem path");
-        }
-    }
-
-    /**
-     * Set filesystem location to which the {@code ChronicleMap} instance will persist its entries off-heap. The
-     * specified value must be a {@code File} that is readable and writable.
-     *
-     * @param persistedTo off-heap entry storage filesystem location
-     */
-    public void setPersistedTo(File persistedTo) {
-        config.persistedTo = persistedTo;
-    }
-
-    /**
-     * Set network addresses to which ChronicleMap instances created by this object will push entries.
-     *
-     * @param pushToAddresses network addresses to push to
-     */
-    public void setPushTo(InetSocketAddress... pushToAddresses) {
-        if (0 < pushToAddresses.length) {
-            config.pushToAddresses = pushToAddresses;
-        }
-    }
-
-    /**
-     * Set network addresses to which ChronicleMap instances created by this object will push entries.
-     *
-     * @param pushToAddresses network addresses to push to
-     * @see InetSocketAddressEditor
-     */
-    public void setPushTo(String... pushToAddresses) {
-        InetSocketAddress[] converted = new InetSocketAddress[pushToAddresses.length];
-        for (int i = 0; i < pushToAddresses.length; i++) {
-            InetSocketAddressEditor editor = new InetSocketAddressEditor();
-            editor.setAsText(pushToAddresses[i]);
-            converted[i] = (InetSocketAddress)editor.getValue();
-        }
-        setPushTo(converted);
-    }
-
-    /**
      * Set listener to be fired on error events in ChronicleMap instances created by this object.
      *
      * @param errorListener error event listener
@@ -483,6 +397,13 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
 
     /**
      * {@inheritDoc}
+     */
+    protected ChronicleMapBuilderConfig getConfig() {
+        return config;
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>This method implementation constructs and configures a
      * {@linkplain ChronicleMapBuilder} singleton, from which the {@code ChronicleMap} object
      * is produced.</p>
@@ -556,11 +477,11 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
             builder.metaDataBytes(config.metaDataBytes);
             slf4jLogger.debug("Map entries will allocate {} bytes for metadata", config.metaDataBytes);
         }
-        if (null != config.lockTimeOutParser && config.lockTimeOutParser.valid()) {
-            builder.lockTimeOut(config.lockTimeOutParser.getAmount(), config.lockTimeOutParser.getUnit());
+        if (config.isLockTimeOutSet()) {
+            builder.lockTimeOut(config.getLockTimeOutAmount(), config.getLockTimeOutUnit());
             slf4jLogger.debug("Map query operation lock timeout set to {} {}",
-                              config.lockTimeOutParser.getAmount(),
-                              config.lockTimeOutParser.getUnit());
+                              config.getLockTimeOutAmount(),
+                              config.getLockTimeOutUnit());
         }
 
         // 6. Low-level storage settings
@@ -623,7 +544,7 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
      * Holds configuration values passed to parent {@code ChronicleMapBuilderBean} mutator methods. Allows for delayed
      * construction of the {@code ChronicleMapBuilder<K, V>} instance.
      */
-    final class ChronicleMapBuilderConfig {
+    final class ChronicleMapBuilderConfig extends AbstractBuilderConfig {
 
         private Class<K> keyClass;
         private BytesMarshaller<? super K> keyMarshaller;
@@ -647,9 +568,7 @@ public class ChronicleMapBuilderBean<K, V> extends AbstractFactoryBean<Chronicle
         private ObjectSerializer objectSerializer;
         private Boolean putReturnsNull, removeReturnsNull, immutableKeys;
         private int metaDataBytes = -1;
-        private LockTimeOutParser lockTimeOutParser = null;
-        private File persistedTo = null;
-        private InetSocketAddress[] pushToAddresses = null;
+
         private ChronicleHashErrorListener errorListener = null;
         private MapEventListener<K, V> eventListener = null;
         private BytesMapEventListener bytesEventListener = null;

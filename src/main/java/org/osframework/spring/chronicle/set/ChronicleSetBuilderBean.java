@@ -2,6 +2,7 @@ package org.osframework.spring.chronicle.set;
 
 import net.openhft.chronicle.set.ChronicleSet;
 import net.openhft.chronicle.set.ChronicleSetBuilder;
+import org.osframework.spring.chronicle.AbstractChronicleBuilderBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
@@ -28,17 +29,15 @@ import java.io.File;
  * @see net.openhft.chronicle.set.ChronicleSet
  * @see net.openhft.chronicle.set.ChronicleSetBuilder
  */
-public class ChronicleSetBuilderBean<K> extends AbstractFactoryBean<ChronicleSet<K>> {
+public class ChronicleSetBuilderBean<K> extends AbstractChronicleBuilderBean<ChronicleSet<K>> {
 
     private final ChronicleSetBuilderConfig config;
-    private final Logger slf4jLogger;
 
     private ChronicleSetBuilder<K> builder = null;
 
     public ChronicleSetBuilderBean() {
         super();
         config = new ChronicleSetBuilderConfig();
-        slf4jLogger = LoggerFactory.getLogger(this.getClass());
     }
 
     /**
@@ -48,30 +47,6 @@ public class ChronicleSetBuilderBean<K> extends AbstractFactoryBean<ChronicleSet
      */
     public void setKeyClass(Class<K> keyClass) {
         config.keyClass = keyClass;
-    }
-
-    /**
-     * Set filesystem location to which the ChronicleSet instance will persist its entries off-heap. The
-     * specified value must resolve to a {@code File} that is readable and writable.
-     *
-     * @param persistedTo off-heap entry storage filesystem location
-     */
-    public void setPersistedTo(Resource persistedTo) {
-        if (persistedTo instanceof FileSystemResource) {
-            setPersistedTo(((FileSystemResource)persistedTo).getFile());
-        } else {
-            throw new IllegalArgumentException("Resource argument must resolve to a filesystem path");
-        }
-    }
-
-    /**
-     * Set filesystem location to which the ChronicleSet instance will persist its entries off-heap. The
-     * specified value must be a {@code File} that is readable and writable.
-     *
-     * @param persistedTo off-heap entry storage filesystem location
-     */
-    public void setPersistedTo(File persistedTo) {
-        config.persistedTo = persistedTo;
     }
 
     /**
@@ -110,6 +85,10 @@ public class ChronicleSetBuilderBean<K> extends AbstractFactoryBean<ChronicleSet
         super.afterPropertiesSet();
     }
 
+    public ChronicleSetBuilderConfig getConfig() {
+        return config;
+    }
+
     /**
      * {@inheritDoc}
      * <p>This method implementation constructs and configures a
@@ -134,11 +113,10 @@ public class ChronicleSetBuilderBean<K> extends AbstractFactoryBean<ChronicleSet
      * Holds configuration values passed to parent {@code ChronicleSetBuilderBean} mutator
      * methods. Allows for delayed construction of the {@code ChronicleSetBuilder<K>} instance.
      */
-    final class ChronicleSetBuilderConfig {
+    final class ChronicleSetBuilderConfig extends AbstractBuilderConfig {
 
         private Class<K> keyClass;
 
-        private File persistedTo = null;
     }
 
 }

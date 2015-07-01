@@ -1,5 +1,6 @@
-package org.osframework.spring.chronicle.map;
+package org.osframework.spring.chronicle;
 
+import org.osframework.spring.chronicle.LockTimeOutParser;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
