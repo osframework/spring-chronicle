@@ -341,6 +341,14 @@
 						<link>http://openhft.github.io/Chronicle-Queue/apidocs</link>
 					</links>
 				</configuration>
+				<reportSets>
+					<reportSet>
+						<id>default</id>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
 			</plugin>
 			<plugin>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
