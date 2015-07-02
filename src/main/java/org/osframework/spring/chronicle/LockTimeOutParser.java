@@ -1,13 +1,15 @@
-package org.osframework.spring.chronicle.map;
+package org.osframework.spring.chronicle;
 
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Helper class for parsing of a lock timeout expression and provision of the result duration and {@code TimeUnit}.
+ * Helper class for parsing of a lock timeout expression and provision of the
+ * result duration and {@code TimeUnit}.
  * <h2>Timeout expression</h2>
- * <p>Valid timeout expressions are composed of a long amount and a standard time unit abbreviation. Examples:</p>
+ * <p>Valid timeout expressions are composed of a long amount and a standard
+ * time unit abbreviation. Examples:</p>
  * <pre>
  * 100ns - 100 nanoseconds
  * 300µs - 300 microseconds
@@ -16,11 +18,11 @@ import java.util.regex.Pattern;
  *    2m -   2 minutes
  *    1h -   1 hour
  * </pre>
- * <p>This class is package private; it is intended only for use by instances of {@code ChronicleMapBuilderBean}.</p>
+ * <p>This class is package private; it is intended only for use by instances of
+ * {@code AbstractChronicleBuilderBean}.</p>
  *
  * @author <a href="mailto:dave@osframework.org">Dave Joyce</a>
  * @version 0.0.1
- * @since 2015-06-17
  * @see net.openhft.chronicle.map.ChronicleMapBuilder#lockTimeOut(long, TimeUnit)
  */
 class LockTimeOutParser {
