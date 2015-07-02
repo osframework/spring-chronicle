@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:dave@osframework.org">Dave Joyce</a>
  * @since 0.0.1
  */
-public abstract class AbstractChronicleBuilderBean<K, T> extends AbstractFactoryBean<T> {
+public abstract class AbstractChronicleCollectionBuilderBean<K, T> extends AbstractFactoryBean<T> {
 
     /**
      * Default maximum number of entries stored by collection instance created
@@ -37,7 +37,7 @@ public abstract class AbstractChronicleBuilderBean<K, T> extends AbstractFactory
     /**
      * Default constructor. Initializes logger for use by subclasses.
      */
-    public AbstractChronicleBuilderBean() {
+    public AbstractChronicleCollectionBuilderBean() {
         super();
         this.slf4jLogger = LoggerFactory.getLogger(this.getClass());
     }
@@ -291,7 +291,7 @@ public abstract class AbstractChronicleBuilderBean<K, T> extends AbstractFactory
 
     /**
      * Abstract superclass of builder configuration types, used internally by
-     * concrete subclasses of {@linkplain AbstractChronicleBuilderBean}. Classes
+     * concrete subclasses of {@linkplain AbstractChronicleCollectionBuilderBean}. Classes
      * which extend this class gain all fields here, as well as provide any
      * specific configuration settings necessary for their associated Chronicle
      * collection type.

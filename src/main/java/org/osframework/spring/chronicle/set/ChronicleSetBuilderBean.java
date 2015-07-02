@@ -1,17 +1,8 @@
 package org.osframework.spring.chronicle.set;
 
-import net.openhft.chronicle.hash.ChronicleHashBuilder;
 import net.openhft.chronicle.set.ChronicleSet;
 import net.openhft.chronicle.set.ChronicleSetBuilder;
-import org.osframework.spring.chronicle.AbstractChronicleBuilderBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.AbstractFactoryBean;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-
-import java.io.File;
-import java.util.Arrays;
+import org.osframework.spring.chronicle.AbstractChronicleCollectionBuilderBean;
 
 /**
  * Adapter implementation of {@code FactoryBean} interface to support creation of a
@@ -31,7 +22,7 @@ import java.util.Arrays;
  * @see net.openhft.chronicle.set.ChronicleSet
  * @see net.openhft.chronicle.set.ChronicleSetBuilder
  */
-public class ChronicleSetBuilderBean<K> extends AbstractChronicleBuilderBean<K, ChronicleSet<K>> {
+public class ChronicleSetBuilderBean<K> extends AbstractChronicleCollectionBuilderBean<K, ChronicleSet<K>> {
 
     private final ChronicleSetBuilderConfig config;
 

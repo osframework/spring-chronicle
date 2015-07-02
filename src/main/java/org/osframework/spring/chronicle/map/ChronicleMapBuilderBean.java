@@ -2,7 +2,7 @@ package org.osframework.spring.chronicle.map;
 
 import net.openhft.chronicle.map.*;
 import net.openhft.lang.io.serialization.BytesMarshaller;
-import org.osframework.spring.chronicle.AbstractChronicleBuilderBean;
+import org.osframework.spring.chronicle.AbstractChronicleCollectionBuilderBean;
 import org.osframework.spring.chronicle.InetSocketAddressEditor;
 
 import java.net.InetSocketAddress;
@@ -27,7 +27,7 @@ import java.util.Arrays;
  * @see net.openhft.chronicle.map.ChronicleMap
  * @see net.openhft.chronicle.map.ChronicleMapBuilder
  */
-public class ChronicleMapBuilderBean<K, V> extends AbstractChronicleBuilderBean<K, ChronicleMap<K, V>> {
+public class ChronicleMapBuilderBean<K, V> extends AbstractChronicleCollectionBuilderBean<K, ChronicleMap<K, V>> {
 
     private final ChronicleMapBuilderConfig config;
 

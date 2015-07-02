@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  *    1h -   1 hour
  * </pre>
  * <p>This class is package private; it is intended only for use by instances of
- * {@code AbstractChronicleBuilderBean}.</p>
+ * {@code AbstractChronicleCollectionBuilderBean}.</p>
  *
  * @author <a href="mailto:dave@osframework.org">Dave Joyce</a>
  * @version 0.0.1
