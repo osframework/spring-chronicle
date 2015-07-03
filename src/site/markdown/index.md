@@ -1,8 +1,9 @@
-# Spring Framework - Chronicle Collection Support
+# Introduction
 
-The **spring-chronicle** library is an extension module for the popular [Spring Framework](https://spring.io/), enabling
-developers to easily wire up [Chronicle](http://chronicle.software/) high-performance data structures as beans in their
-application's Spring configuration.
+The **spring-chronicle** library is an extension module for the popular
+[Spring Framework](https://spring.io/), enabling developers to easily wire up
+[Chronicle](http://chronicle.software/) high-performance data structures as
+beans in their application's Spring configuration.
 
 This library supports configuration and creation of:
 

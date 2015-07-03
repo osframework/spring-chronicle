@@ -5,6 +5,12 @@ An extension module for the [Spring Framework][], supporting integration of Chro
  * [Chronicle Queue][]
  * Chronicle Set
 
+## Documentation
+To find out more about how to use this library, see:
+
+ * [Project site][], which is always up-to-date with the [latest build][]
+ * [Project wiki][], which contains community-submitted notes and advice
+
 ## License
 This library is released under version 2.0 of the [Apache License][].
 
@@ -12,3 +18,6 @@ This library is released under version 2.0 of the [Apache License][].
 [Chronicle Map]: https://github.com/OpenHFT/Chronicle-Map
 [Chronicle Queue]: https://github.com/OpenHFT/Chronicle-Queue
 [Spring Framework]: https://github.com/spring-projects/spring-framework
+[Project site]: https://osframework.github.io/spring-chronicle/
+[Project wiki]: https://github.com/osframework/spring-chronicle/wiki
+[latest build]: https://travis-ci.org/osframework/spring-chronicle
